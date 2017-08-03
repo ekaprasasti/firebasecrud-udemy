@@ -394,10 +394,10 @@ Import angularfire database:
 import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
 
 export class ShoppingListPage {
-	constructor(private database: angularFireDatabase){
+	constructor(private database: AngularFireDatabase){
 		/*
 			Pointing shoppingListRef$ at Firebase -> 'shopping-list' node. That means not only can we push things
-			fron this reference to the database, but ALSO we have access to verything inside of that node.
+			from this reference to the database, but ALSO we have access to everything inside of that node.
 		*/
 		this.shoppingListRef$ = this.database.list('shopping-list');
 	}
@@ -467,7 +467,9 @@ Import and Add `ActionSheet` at constructor:
 ```javascript
 import {ActionSheetController} from 'ionic-angular';
 
-constructor(private actionSheetCtrl: ActionSheetController){}
+export class ShoppingListPage {
+	constructor(private actionSheetCtrl: ActionSheetController){}
+}
 ```
 
 Add action button in view `shopping-list.html` file:
@@ -525,7 +527,6 @@ Open file `edit-shopping-item.ts`, and import AngularFireDatabase:
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
 import { ShoppingItem } from '../../models/shopping-item/shopping-item.interface';
-import { EditShoppingItemPage } from '../edit-shopping-item/edit-shopping-item';
 
 export class EditShoppingItemPage {
 	shoppingItemRef$: FirebaseObjectObservable<ShoppingItem>;
@@ -540,21 +541,23 @@ export class EditShoppingItemPage {
 } 
 ```
 
-Back to `shopping-list.ts` and inside `selectShoppingItem()` function:
+Back to `shopping-list.ts` and inside `selectShoppingItem()` function, and import EditShoppingItem:
 
 ```javascript
+import { EditShoppingItemPage } from '../edit-shopping-item/edit-shopping-item';
+
 buttons: [
 	{
 		text: 'Edit',
 		handler: () => {
 			// Send the user to the EditShoppingItemPage and pass the key as a parameter
-			this.navCtrl.push(EditShoppingItemPage, { shoppingItemId: shoppintItem.$key });
+			this.navCtrl.push(EditShoppingItemPage, { shoppingItemId: shoppingItem.$key });
 
 		}
 	},
 ```
 
-Debug `shoppingItemId`:
+Debug `shoppingItemId` in `edit-shopping-item.ts` constructor:
 
 ```javascript
 // Log out the navParam
@@ -585,7 +588,7 @@ Let's take our template in edit shopping item page. Open `edit-shopping-item.htm
 		<ion-input type="number" [(ngModel)]="shoppingItem.itemNumber"></ion-input>
 	</ion-item>
 
-	<button ion-button block">Edit Item</button>
+	<button ion-button block>Edit Item</button>
 </ion-content>
 ```
 
@@ -650,7 +653,7 @@ export class EditShoppingItemPage {
 }
 ```
 
-Edit `this.shoppingItemRef$.subscript()` in our constructor:
+Edit `this.shoppingItemRef$.subscribe()` in our constructor:
 
 ```javascript
 this.shoppingItemSubscription = this.shoppingItemRef$.subscribe(

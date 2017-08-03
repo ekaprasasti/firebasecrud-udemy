@@ -11,12 +11,14 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { MyApp } from './app.component';
 import { ShoppingList } from '../pages/shopping-list/shopping-list';
 import { AddShopping } from '../pages/add-shopping/add-shopping';
+import { EditShoppingItem } from '../pages/edit-shopping-item/edit-shopping-item';
 
 @NgModule({
   declarations: [
     MyApp,
     ShoppingList,
-		AddShopping
+		AddShopping,
+		EditShoppingItem
 	],
   imports: [
     BrowserModule,
@@ -32,7 +34,8 @@ import { AddShopping } from '../pages/add-shopping/add-shopping';
   entryComponents: [
     MyApp,
     ShoppingList,
-		AddShopping
+		AddShopping,
+		EditShoppingItem
 	],
   providers: [
     StatusBar,

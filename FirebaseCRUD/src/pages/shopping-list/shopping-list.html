@@ -1,9 +1,3 @@
-<!--
-  Generated template for the ShoppingList page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
   <ion-navbar color="primary">
@@ -19,5 +13,11 @@
 
 
 <ion-content padding>
-
+	<ion-list>
+    <!-- Repeat the ion-item as many items that we have inside of our shopping list. -->
+    <ion-item *ngFor="let item of shoppingListRef$ | async" (click)="selectShoppingItem(item)">
+      <h2>Item name: {{item.itemName}}</h2>
+      <h3>Amount: {{item.itemnumber}}</h3>
+    </ion-item>
+  </ion-list>	
 </ion-content>

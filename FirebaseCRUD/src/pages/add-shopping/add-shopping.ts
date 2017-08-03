@@ -33,7 +33,8 @@ export class AddShopping {
 			itemName: this.shoppingItem.itemName,
 			itemnumber: Number(this.shoppingItem.itemNumber)	
 		});
-
+		
+		this.navCtrl.pop();
 	}
 
 }
