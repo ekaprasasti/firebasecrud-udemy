@@ -60,7 +60,7 @@ In firebase console, copy our keys credentials and paste it in `firebase.credent
 ```javascript
 export const FIREBASE_CREDENTIALS = {
 	apiKey: "Your API key",
-	authDomain: "your_auth_domain.firebaseapp.com,
+	authDomain: "your_auth_domain.firebaseapp.com",
 	// and more
 }
 ```
