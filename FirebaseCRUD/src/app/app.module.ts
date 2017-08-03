@@ -6,7 +6,8 @@ import { StatusBar } from '@ionic-native/status-bar';
 
 import { AngularFireModule } from 'angularfire2';
 import { FIREBASE_CREDENTIALS } from './firebase.credentials';
-
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+ 
 import { MyApp } from './app.component';
 import { ShoppingList } from '../pages/shopping-list/shopping-list';
 import { AddShopping } from '../pages/add-shopping/add-shopping';
@@ -20,8 +21,12 @@ import { AddShopping } from '../pages/add-shopping/add-shopping';
   imports: [
     BrowserModule,
 		IonicModule.forRoot(MyApp),
+		
 		// Initialise Angularfire with credentials from the dashboard
-		AngularFireModule.initializeApp(FIREBASE_CREDENTIALS)
+		AngularFireModule.initializeApp(FIREBASE_CREDENTIALS),
+		
+		// Import the AngularFireDatabaseModule to use database interactions
+		AngularFireDatabaseModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [

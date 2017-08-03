@@ -306,6 +306,7 @@ import { AngularFireDatabaseModule } from 'angularfire2/database';
 		AngularFireDatabaseModule
 	]
 });
+```
 
 And in `add-shopping.ts` file import `AngularFireDatabase` too:
 
