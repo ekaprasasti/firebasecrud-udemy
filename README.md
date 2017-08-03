@@ -241,4 +241,429 @@ Open file `add-shopping.html` and edit code like this:
 </ion-content>
 ```
 
-Now refresh app in browser and look the change. 
+Now refresh app in browser and look the change.
+
+## 9. Template Form
+
+Create folder and files `src/models/shopping-item/shopping-item.interface.ts`. And code like this:
+
+```javascript
+export interface ShoppingItem {
+	itemName: string;
+	itemNumber: number;
+}
+```
+
+Import that file and import `shopping-item.interface.ts` in `add-shopping.ts` like this:
+
+```javascript
+import { ShoppingItem } from '../../models/shopping-item/shopping-item.interface';
+
+export class AddShoppingPage {
+	// creating a new object
+	shoppingItem = {} as ShoppingItem
+}
+```
+
+Open file `add-shopping.html` and edit code:
+
+```html
+<ion-content padding>
+	<ion-item>
+		<ion-label floating>Item Name</ion-label>
+		<ion-input type="text" [(ngModel)]="shoppingItem.itemName"></ion-input>
+	</ion-item>
+
+	<ion-item>
+		<ion-label floating>Number</ion-label>
+		<ion-input type="number" [(ngModel)]="shoppingItem.itemNumber"></ion-input>
+	</ion-item>
+
+	<button ion-button block (click)="addShoppingItem(shoppingItem)">Add Item</button>
+</ion-content>
+```
+In `add-shopping.ts` remove `ionViewDidLoad()` function and in class `AddShoppingPage` type this code:
+
+```javascript
+addShoppingItem(shoppingItem: ShoppingItem){
+	// log the result out to the console
+	console.log(shoppingItem);
+}
+```
+
+Refresh app in browser and add shopping by form submit and then look at to the console in inspect element.
+
+## 10. Adding Shopping Items to Firebase
+
+Import `AngularFireDatabaseModule` in `app.module.ts` file:
+
+```javascript
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+
+@NgModule({
+	imports: [
+		// Import the AngularFireDatabaseModule to use database interactions
+		AngularFireDatabaseModule
+	]
+});
+
+And in `add-shopping.ts` file import `AngularFireDatabase` too:
+
+```javascript
+import { AngularFireDatabase } from 'angularfire2/database';
+```
+
+Inject shopping page in constructor:
+
+```javascript
+export class AddShoppingPage {
+	constructor(private database: AngularFireDatabase) { }
+}
+```
+
+Create referance and import `FirebaseListObservable`.
+
+```javascript
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+
+export class AddShoppingPage {
+	shoppingItemRef$: FirebaseListObservable<ShoppingItem[]>
+	
+	constructor(private database: AngularFireDatabase){
+		this.shoppingItemRef$ = this.database.list('shopping-list');
+	}
+}
+```
+
+Push to database:
+
+```javascript
+addShoppingItem(shoppingItem: ShoppingItem){
+	/*
+		Create a new anonymous object and convert itemNumber to a number.
+		Push this to our Firebase database under the 'shopping-list' node.
+	*/
+	
+	this.shoppingItemRef$.push({
+		itemName: this.shoppingItem.itemName,
+		itemNumber: Number(this.shoppingItem.itemNumber)
+	});
+}
+```
+
+Edit firebase database rules, open database, click tab rules end edit like this:
+
+```javascript
+{
+	"rules": {
+		".read": true,
+		".write": true
+	}
+}
+```
+
+Try to submit form add shopping list.
+
+Reset form and back to previous page after submit in `add-shopping.ts` 
+
+```javascript
+// Reset our ShoppingItem
+this.shoppingItem = {} as ShoppingItem;
+
+// Navigate the user back to the ShoppingListPage
+this.navCtrl.pop();
+```
+
+## 11. Displaying Shopping List Data
+
+Open `shopping-list.ts` and create shopping list reference, then import shopping item interface:
+
+```javascript
+import { FirebaseListObservable } from 'angularfire2/database';
+import { ShoppingItem } from '../../models/shopping-item/shopping-item.interface';
+
+export class ShoppingListPage {
+	shoppingListRef$:	 FirebaseListObservable<ShoppingItem[]>
+}
+```
+
+Import angularfire database:
+
+```javascript
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+
+export class ShoppingListPage {
+	constructor(private database: angularFireDatabase){
+		/*
+			Pointing shoppingListRef$ at Firebase -> 'shopping-list' node. That means not only can we push things
+			fron this reference to the database, but ALSO we have access to verything inside of that node.
+		*/
+		this.shoppingListRef$ = this.database.list('shopping-list');
+	}
+}
+```
+
+Listing on view `shopping-list.html`:
+
+```html
+<ion-content padding>
+	<ion-list>
+		<!-- Repeat the ion-item as many items that we have inside of our shopping list. -->
+		<ion-item *ngFor="let item of shoppingListRef$ | async">
+			<h2>Item name: {{item.itemName}}</h2>
+			<h3>Amount: {{item.itemNumber}}</h3>
+		</ion-item>
+	</ion-list>
+</ion-content>
+```
+
+Refresh app in browser. And test with add new shopping list.
+
+## 12. Removing Shopping Items
+
+Back to `shopping-list.ts` file, and make function `selectShoppingItem()`:
+
+```javascript
+selectShoppingItem(shoppingItem: ShoppingItem) {
+	/*
+		Display an ActionSheet that gives the user the following options:
+		1. Edit the shoppingItem
+		2. Delete the shoppingItem
+		3. Cancel selection
+	*/
+
+	this.actionSheetCtrl.create({
+		title: `${shoppingItem.itemName}`,
+		buttons: [
+			{
+				text: 'Edit',
+				handler: () => {
+					// Send the user to the EditShoppingItemPage and pass the key as a parameter
+				}
+			},
+			{
+				text: 'Delete',
+				role: 'destructive',
+				handler: () => {
+					// Delete the current ShoppingItem, passed in via the parameter
+					this.shoppingListRef$.remove(shoppingItem.$key);	
+				}
+			},
+			{
+				text: 'Cancel',
+				role: 'cancel',
+				handler: () => {
+					console.log('The user has selected the cancel button');
+				}
+			}
+		]
+	}).present();
+}
+```
+
+Import and Add `ActionSheet` at constructor:
+
+```javascript
+import {ActionSheetController} from 'ionic-angular';
+
+constructor(private actionSheetCtrl: ActionSheetController){}
+```
+
+Add action button in view `shopping-list.html` file:
+
+```html
+<ion-content padding>
+	<ion-list>
+		<ion-item *ngFor="let item of shoppingListRef$ | async" (click)="selectShoppingItem(item)">
+			...
+		</ion-item>
+	</ion-list>
+</ion-content>
+```
+
+Open `shopping-item.interface.ts` and add `$key` reference from firebase, sign `?` is remark for optional:
+
+```javascript
+export interface ShoppingItem {
+	$key?: string;
+	itemName: string;
+	itemNumber: number;
+}
+```
+
+Refresh browser and click in list item, then test with delete some item.
+
+## 13. Creating an EditShoppingItemPage and Passing NavParams
+
+Open terminal and type this command:
+
+```bash
+ionic generate page EditShoppingItem
+```
+
+Open file `edit-shopping-item.ts` and remove ionic decorator with `@IonicPage()` function if we don't use lazy loading.
+
+Open file `app.module.ts` and import these new page:
+
+```javascript
+import { EditShoppingItemPage } from '../pages/edit-shopping-item';
+
+@NgModule({
+	declarations: [
+		EditShoppingItemPage
+	],
+	entryComponents: [
+		EditShoppingItemPage
+	]
+});
+```
+
+Open file `edit-shopping-item.ts`, and import AngularFireDatabase:
+
+```javascript
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
+
+import { ShoppingItem } from '../../models/shopping-item/shopping-item.interface';
+import { EditShoppingItemPage } from '../edit-shopping-item/edit-shopping-item';
+
+export class EditShoppingItemPage {
+	shoppingItemRef$: FirebaseObjectObservable<ShoppingItem>;
+
+	constructor(private database: AngularFireDatabase){
+		// Creating an EditShoppingItemPage and Passing NavParams				
+		const shoppingItemId = this.navParams.get('shoppingItemId');
+	
+		// Set the scope of our Firebase Object equal to our selected item	
+		this.shoppingItemRef$ = this.database.object(`shopping-list/${shoppingItemId}`);
+	}
+} 
+```
+
+Back to `shopping-list.ts` and inside `selectShoppingItem()` function:
+
+```javascript
+buttons: [
+	{
+		text: 'Edit',
+		handler: () => {
+			// Send the user to the EditShoppingItemPage and pass the key as a parameter
+			this.navCtrl.push(EditShoppingItemPage, { shoppingItemId: shoppintItem.$key });
+
+		}
+	},
+```
+
+Debug `shoppingItemId`:
+
+```javascript
+// Log out the navParam
+console.log(shoppingItemId);
+```
+
+Refresh app in browser, if we choose selcted item and click edit then look at the inspect element, we can find the `id` of the item in the console.
+
+## 14. Edit Shopping Items
+
+Let's take our template in edit shopping item page. Open `edit-shopping-item.html` and edit like this:
+
+```html
+<ion-header>
+	<ion-navbar color="primary">
+		<ion-title>EditShoppingItem</ion-title>
+	</ion-navbar>
+</ion-header>
+
+<ion-content padding>
+	<ion-item>
+		<ion-label floating>Item Name</ion-label>
+		<ion-input type="text" [(ngModel)]="shoppingItem.itemName"></ion-input>
+	</ion-item>
+
+	<ion-item>
+		<ion-label floating>Number</ion-label>
+		<ion-input type="number" [(ngModel)]="shoppingItem.itemNumber"></ion-input>
+	</ion-item>
+
+	<button ion-button block">Edit Item</button>
+</ion-content>
+```
+
+Open `edit-shopping-item.ts` and reference `shoppingItem` in EditShoppingItemPage class:
+
+```javascript
+export class EditShoppingItemPage {
+	shoppingItem = {} as ShoppingItem;
+}
+```
+
+Sign these reference with async pipe:
+
+```javascript
+constructor(){
+	// Subscirbe to the Object and assign the result to this.shoppingItem
+	this.shoppingItemRef$.subscribe(
+		shoppingItem => this.shoppingItem = shoppingItem
+	);
+}
+```
+
+Create function for update the reference update of firebase:
+
+```javascript
+editShoppingItem(shoppingItem: ShoppingItem){
+	// Update our Firebase node with new item data
+	this.shoppingItemRef$.update(shoppingItem);
+
+	// Send the user back to the ShoppingListPage
+	this.navCtrl.pop();
+}
+```
+
+Edit button `Edit Item` in `edit-shopping-item.html`:
+
+```html
+<button ion-button block (click)="editShoppingItem(shoppingItem)">Edit Item</button>
+```
+
+Refresh app in browser, and try edit item and back to the list. Now we able to edit item in our application.
+
+Remove the `ionViewDidLoad()` function, and edit `edit-shopping-item.html` header like this:
+
+```html
+<ion-header>
+	<ion-navbar color="primary">
+		<ion-title>{{shoppingItem.itemName}}</ion-title>
+	</ion-navbar>
+</ion-header>
+```
+
+Refresh app again and try edit some item and look at the data binding in header.
+
+Unsubscribe our object observable with import rxjs in `edit-shopping-item.ts` file:
+
+```javascript
+import { Subscription } from 'rxjs/Subscription';
+
+export class EditShoppingItemPage {
+	shoppingItemSubscription: Subscription;
+}
+```
+
+Edit `this.shoppingItemRef$.subscript()` in our constructor:
+
+```javascript
+this.shoppingItemSubscription = this.shoppingItemRef$.subscribe(
+	shoppingItem => this.shoppingItem = shoppingItem
+);
+```
+
+Add function `ionViewWillLeave()`:
+
+```javascript
+ionViewWillLeave() {
+	// Unsubscribe from the Observable when leaving the page
+	this.shoppingItemSubscription.unsubscribe();
+}
+```
+
+The benefits of using async pipe in `shopping-list.html` is subscribtion and unsubscription handling automatically by angular from the observable.
